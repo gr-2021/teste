@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Painel Mini Curso do Meiga</title>
+		<link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    	<script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+		<py-env>
+			- folium
+			- pandas
+		</py-env>
+	</head>
+	<body>
+		<div id="barra"></div>
+		<py-script></py-script>
+
+		<div id="mapa_preco"></div>
+		<py-script output="mapa_preco">
+			import pandas as pd
+			from folium import Map, Marker, Popup, Icon
+
+			df = pd.read_csv('data/AB_NYC_2019.csv')
+			df = df.dropna()
+			df = df[df['availability_365'] > 0]
+			df = df.reset_index(drop=True)
+
+			df_plot = df[['latitude', 'longitude', 'neighbourhood_group', 'price']].groupby('neighbourhood_group').max().reset_index()
+
+			mp = Map(
+		    zoom_start=10,
+		    control_scale=True,
+		    location=[df_plot['latitude'].mean(), 
+		              df_plot['longitude'].mean()]
+			)
+
+			for _, row in df_plot.iterrows():
+			    text_popup = f"<b>{row['neighbourhood_group']}</b><br>Price: {row['price']}"
+			    
+			    Marker([row['latitude'], row['longitude']], popup=Popup(text_popup, max_width=90)).add_to(mp)
+			    
+			mp
+		</py-script>
+
+		<div id="mapa_tipo"></div>
+		<py-script></py-script>
+
+	</body>
+</html>
